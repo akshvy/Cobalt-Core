@@ -3,9 +3,12 @@
 **Cobalt Core** is an intelligent mock interview platform designed to help engineers bridge the gap between their resume and the technical interview. Built with a focus on high-performance logic and minimalist design.
 
 ## Features
-- **Resume Parsing:** Upload your PDF/Text resume for a tailored experience.
-- **Dynamic Questioning:** AI generates technical and behavioral questions based on the Job Role.
-- **Real-time Feedback:** Detailed analysis of your performance after each session.
+- **Resume Parsing:** Upload a PDF/TXT/DOCX resume and extract structured text.
+- **Text-mode Interview:** type a role, get an AI‑generated question based on your resume, submit answers, receive simple scoring feedback.
+- **Video-mode Interview:** record short audio clips via webcam/microphone; audio is sent to the server, transcribed by OpenAI Whisper, and evaluated.
+- **Transcript Feedback:** paste any transcript to get repeated-word counts and basic grammar hints.
+- **Frontend Web UI:** a single‑page HTML interface combining all functionality; persists interview history in JavaScript for context.
+- **API Endpoints:** FastAPI backend with `/upload_resume`, `/start_interview`, `/submit_answer`, `/feedback`, and `/video_audio`.
 
 ## Tech Stack
 - **Backend:** Python (FastAPI)

@@ -36,8 +36,13 @@ async def upload_resume(file: UploadFile = File(...)):
     try:
         content = await file.read()
         text = resume_parser.extract_text(content, file.filename)
+        if not text or not text.strip():
+            raise ValueError("No text extracted from supplied resume")
         data = resume_parser.parse_resume(text)
         return {"parsed": data}
+    except HTTPException:
+        # propagate HTTPExceptions raised above
+        raise
     except Exception as e:
         # log exception if necessary (stdout for now)
         print(f"resume upload error: {e}")

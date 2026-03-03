@@ -38,8 +38,15 @@
         <div id="videoMode" style="display:none;">
             <p>A video chat session with the AI model (placeholder).</p>
             <video id="localVideo" autoplay muted playsinline style="width:300px; height:200px; background:#000"></video>
-            <button id="startVideoBtn">Start Video Session</button>
+            <button id="startVideoBtn">Start Camera</button>
             <p id="videoStatus"></p>
+
+            <div id="recorderControls" style="margin-top:1rem; display:none;">
+                <button id="recordBtn">Start Recording</button>
+                <p id="recordStatus"></p>
+                <pre id="transcriptDisplay"></pre>
+                <pre id="evalDisplay"></pre>
+            </div>
         </div>
     </section>
 
@@ -124,8 +131,41 @@
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
                 localVideo.srcObject = stream;
-                videoStatus.textContent = 'Camera started. (AI video chat not implemented)';
-                // Here you would connect the stream to a backend/service for AI processing
+                videoStatus.textContent = 'Camera started.';
+                document.getElementById('recorderControls').style.display = '';
+
+                // set up recorder
+                const mediaRecorder = new MediaRecorder(stream);
+                let chunks = [];
+                recordBtn.onclick = () => {
+                    if (mediaRecorder.state === 'inactive') {
+                        chunks = [];
+                        mediaRecorder.start();
+                        recordStatus.textContent = 'Recording...';
+                        recordBtn.textContent = 'Stop & Send';
+                    } else {
+                        mediaRecorder.stop();
+                    }
+                };
+
+                mediaRecorder.ondataavailable = e => chunks.push(e.data);
+                mediaRecorder.onstop = async () => {
+                    recordStatus.textContent = 'Sending audio...';
+                    const blob = new Blob(chunks, { type: 'audio/webm' });
+                    const form = new FormData();
+                    form.append('file', blob, 'clip.webm');
+                    form.append('history', JSON.stringify(history));
+                    const res = await fetch('/video_audio', {
+                        method: 'POST',
+                        body: form
+                    });
+                    const json = await res.json();
+                    transcriptDisplay.textContent = json.transcript;
+                    evalDisplay.textContent = JSON.stringify(json.evaluation, null, 2);
+                    recordStatus.textContent = 'Done.';
+                    // you could also ask next question here based on json.evaluation or history
+                };
+
             } catch (err) {
                 videoStatus.textContent = 'Failed to access camera: ' + err.message;
             }

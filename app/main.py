@@ -1,7 +1,8 @@
-from fastapi import FastAPI, UploadFile, File, HTTPException
+from fastapi import FastAPI, UploadFile, File, HTTPException, Form
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from . import resume_parser, interviewer, feedback
+import json
 
 app = FastAPI(
     title="Cobalt Core AI Interviewer",
@@ -46,3 +47,15 @@ def submit_answer(payload: dict):
 def get_feedback(payload: dict):
     transcript = payload.get('transcript', '')
     return feedback.analyze(transcript)
+
+
+@app.post("/video_audio")
+async def video_audio(file: UploadFile = File(...), history: str = Form("[]")):
+    # history is a JSON-encoded list of question/answer dicts
+    bytes_data = await file.read()
+    try:
+        hist = json.loads(history)
+    except Exception:
+        hist = []
+    result = interviewer.transcribe_and_evaluate(bytes_data, hist)
+    return result

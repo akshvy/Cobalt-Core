@@ -7,3 +7,8 @@ psycopg2-binary
 openai
 python-docx
 pdfplumber
+python-dotenv
+gtts
+spacy
+textblob
+nltk

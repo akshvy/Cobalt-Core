@@ -1,9 +1,10 @@
 from fastapi import FastAPI, UploadFile, File, HTTPException, Form, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
 
-from . import resume_parser, interviewer, feedback, models
+from . import resume_parser, interviewer, feedback, models, tts
 import json
 
 # initialize database
@@ -106,3 +107,66 @@ async def video_audio(file: UploadFile = File(...), history: str = Form("[]"), s
         new_history = hist + [{"question": hist[-1].get('question') if hist else None, "answer": result.get('transcript')}]
         response["next_question"] = interviewer.next_question(session.role, session.resume_data, new_history)
     return response
+
+
+@app.post("/ai_voice_response")
+def ai_voice_response(payload: dict, db: Session = Depends(get_db)):
+    """Generate AI feedback and next question with voice."""
+    transcript = payload.get('transcript', '')
+    session_id = payload.get('session_id')
+    history = payload.get('history', [])
+    role = payload.get('role', 'Software Engineer')
+    
+    session = None
+    if session_id:
+        session = db.query(models.InterviewSession).get(session_id)
+        if session:
+            role = session.role
+    
+    response = tts.get_ai_response(transcript, role, history)
+    return response
+
+
+@app.get("/sessions/{session_id}")
+def get_session(session_id: int, db: Session = Depends(get_db)):
+    """Retrieve a past interview session with all Q&A."""
+    session = db.query(models.InterviewSession).get(session_id)
+    if not session:
+        raise HTTPException(status_code=404, detail="Session not found")
+    
+    qa_list = db.query(models.QAEntry).filter(models.QAEntry.session_id == session_id).all()
+    interactions = [{"question": qa.question, "answer": qa.answer, "created_at": qa.created_at.isoformat()} for qa in qa_list]
+    
+    return {
+        "id": session.id,
+        "role": session.role,
+        "started_at": session.started_at.isoformat(),
+        "interactions": interactions
+    }
+
+
+@app.get("/sessions")
+def list_sessions(db: Session = Depends(get_db)):
+    """List all past interview sessions."""
+    sessions = db.query(models.InterviewSession).order_by(models.InterviewSession.started_at.desc()).all()
+    return [{"id": s.id, "role": s.role, "started_at": s.started_at.isoformat()} for s in sessions]
+
+
+@app.post("/end_session")
+def end_session(payload: dict, db: Session = Depends(get_db)):
+    """End a session and compute final score."""
+    session_id = payload.get('session_id')
+    session = db.query(models.InterviewSession).get(session_id)
+    if not session:
+        raise HTTPException(status_code=404, detail="Session not found")
+    
+    qa_list = db.query(models.QAEntry).filter(models.QAEntry.session_id == session_id).all()
+    # compute average score from all interactions
+    total_score = sum([qa.answer.count(' ') for qa in qa_list]) / max(len(qa_list), 1)
+    
+    return {
+        "session_id": session_id,
+        "total_interactions": len(qa_list),
+        "final_score": min(100, total_score),
+        "role": session.role
+    }

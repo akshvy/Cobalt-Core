@@ -2,175 +2,915 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Cobalt Core AI Interviewer</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎤 Cobalt Core - AI Interview Platform</title>
     <style>
-        body { font-family: Arial, sans-serif; margin: 2rem; }
-        section { margin-bottom: 2rem; }
-        textarea { width: 100%; height: 100px; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --primary: #667eea;
+            --primary-dark: #764ba2;
+            --secondary: #f093fb;
+            --success: #4caf50;
+            --light: #f8f9fa;
+            --dark: #333;
+            --border: #e0e0e0;
+        }
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            min-height: 100vh;
+            padding: 0;
+            margin: 0;
+        }
+        .header {
+            background: rgba(0, 0, 0, 0.1);
+            padding: 15px 0;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(10px);
+        }
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .header-nav {
+            display: flex;
+            gap: 15px;
+        }
+        .header-nav button {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 12px;
+        }
+        .header-nav button:hover {
+            background: rgba(255, 255, 255, 0.4);
+            transform: translateY(-2px);
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 30px 20px;
+        }
+        .card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+            overflow: hidden;
+            transition: all 0.3s;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.2);
+        }
+        .card-header {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            padding: 20px;
+            font-size: 18px;
+            font-weight: 600;
+        }
+        .card-body {
+            padding: 25px;
+        }
+        .tab-system {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        .tab-buttons {
+            display: flex;
+            background: var(--light);
+            border-bottom: 2px solid var(--border);
+            flex-wrap: wrap;
+        }
+        .tab-btn {
+            flex: 1;
+            min-width: 120px;
+            padding: 15px 20px;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            color: #666;
+            transition: all 0.3s;
+            border-bottom: 3px solid transparent;
+            margin-bottom: -2px;
+        }
+        .tab-btn:hover {
+            background: rgba(102, 126, 234, 0.05);
+            color: var(--primary);
+        }
+        .tab-btn.active {
+            color: white;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            border-bottom: 3px solid var(--secondary);
+        }
+        .tab-content {
+            display: none;
+            padding: 25px;
+            animation: fadeIn 0.3s ease-in;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--dark);
+        }
+        input[type="text"],
+        input[type="file"],
+        textarea,
+        select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: inherit;
+            transition: all 0.3s;
+        }
+        input[type="text"]:focus,
+        textarea:focus {
+            border-color: var(--primary);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        textarea {
+            resize: vertical;
+            min-height: 120px;
+        }
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+        }
+        .btn-secondary {
+            background: var(--light);
+            color: var(--primary);
+            border: 2px solid var(--primary);
+        }
+        .btn-secondary:hover {
+            background: var(--primary);
+            color: white;
+        }
+        .btn-success {
+            background: var(--success);
+            color: white;
+        }
+        .btn-success:hover {
+            filter: brightness(0.9);
+        }
+        .btn-full {
+            width: 100%;
+        }
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .status {
+            padding: 12px 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            display: none;
+        }
+        .status.show {
+            display: block;
+        }
+        .status.info {
+            background: #e3f2fd;
+            color: #1976d2;
+            border-left: 4px solid #1976d2;
+        }
+        .status.success {
+            background: #e8f5e9;
+            color: #388e3c;
+            border-left: 4px solid #388e3c;
+        }
+        .status.error {
+            background: #ffebee;
+            color: #d32f2f;
+            border-left: 4px solid #d32f2f;
+        }
+        .result-box {
+            background: var(--light);
+            border-left: 4px solid var(--primary);
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+        .score-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .score-card {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.3);
+        }
+        .score-value {
+            font-size: 32px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .score-label {
+            font-size: 12px;
+            opacity: 0.9;
+        }
+        .video-container {
+            position: relative;
+            background: #000;
+            border-radius: 12px;
+            overflow: hidden;
+            margin: 15px 0;
+        }
+        video {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+        .video-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0, 0, 0, 0.5);
+            color: white;
+            padding: 10px;
+            font-size: 12px;
+        }
+        .setup-hero {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 50%, var(--secondary) 100%);
+            color: white;
+            padding: 60px 30px;
+            border-radius: 12px;
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        .setup-hero h1 {
+            font-size: 36px;
+            margin-bottom: 15px;
+        }
+        .setup-hero p {
+            font-size: 16px;
+            opacity: 0.95;
+            max-width: 600px;
+            margin: 0 auto 25px;
+        }
+        .setup-steps {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+            margin: 30px 0;
+        }
+        .step-card {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            text-align: center;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+            border-top: 4px solid var(--primary);
+        }
+        .step-number {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: bold;
+            margin: 0 auto 15px;
+        }
+        .step-card h3 {
+            color: var(--dark);
+            margin-bottom: 10px;
+        }
+        .step-card p {
+            color: #666;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 25px 0;
+        }
+        .feature-box {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            border-left: 4px solid var(--primary);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+        }
+        .feature-box h4 {
+            color: var(--primary);
+            margin-bottom: 8px;
+        }
+        .feature-box p {
+            font-size: 13px;
+            color: #666;
+            line-height: 1.5;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal.show {
+            display: flex;
+        }
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            max-width: 500px;
+            width: 90%;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+        .modal-close {
+            float: right;
+            font-size: 24px;
+            cursor: pointer;
+            color: #999;
+            background: none;
+            border: none;
+        }
+        .modal-close:hover {
+            color: var(--dark);
+        }
+        .mt-20 { margin-top: 20px; }
+        .mb-20 { margin-bottom: 20px; }
+        @media (max-width: 600px) {
+            .setup-hero h1 { font-size: 24px; }
+            .setup-hero { padding: 40px 20px; }
+            .btn { width: 100%; }
+            .btn-group { flex-direction: column; }
+            .tab-buttons { flex-direction: column; }
+            .tab-btn { min-width: 100%; }
+        }
     </style>
 </head>
 <body>
-    <h1>Cobalt Core AI Interviewer</h1>
 
-    <section>
-        <h2>Upload Resume</h2>
-        <input type="file" id="resumeFile" />
-        <button id="uploadBtn">Upload</button>
-        <pre id="parsed"></pre>
-    </section>
+<!-- Header -->
+<div class="header">
+    <div class="header-content">
+        <div class="logo">🎤 Cobalt Core</div>
+        <div class="header-nav">
+            <button onclick="showTab('setup')">ℹ️ Setup</button>
+            <button onclick="showTab('interview')">💬 Interview</button>
+        </div>
+    </div>
+</div>
 
-    <section>
-        <h2>Interview</h2>
-        <div>
-            <label><input type="radio" name="mode" value="text" checked /> Text</label>
-            <label><input type="radio" name="mode" value="video" /> Video chat</label>
+<!-- Main Container -->
+<div class="container">
+
+    <!-- Setup/Info Tab -->
+    <div id="setup-tab" class="tab-content active">
+        <div class="setup-hero">
+            <h1>🎯 Welcome to Cobalt Core</h1>
+            <p>AI-powered mock interviews to boost your interview skills and get instant, detailed feedback</p>
+            <button class="btn btn-secondary" onclick="showTab('interview')">▶️ Start Interview</button>
         </div>
 
-        <div id="textMode">
-            <label>Role: <input type="text" id="role" /></label>
-            <button id="startBtn">Start</button>
-            <p id="question"></p>
-            <textarea id="answer" placeholder="Your answer..."></textarea>
-            <button id="submitBtn">Submit Answer</button>
-            <pre id="evalResult"></pre>
-        </div>
-
-        <div id="videoMode" style="display:none;">
-            <p>A video chat session with the AI model (placeholder).</p>
-            <video id="localVideo" autoplay muted playsinline style="width:300px; height:200px; background:#000"></video>
-            <button id="startVideoBtn">Start Camera</button>
-            <p id="videoStatus"></p>
-
-            <div id="recorderControls" style="margin-top:1rem; display:none;">
-                <button id="recordBtn">Start Recording</button>
-                <p id="recordStatus"></p>
-                <pre id="transcriptDisplay"></pre>
-                <pre id="evalDisplay"></pre>
+        <div class="card">
+            <div class="card-header">📋 How It Works</div>
+            <div class="card-body">
+                <div class="setup-steps">
+                    <div class="step-card">
+                        <div class="step-number">1</div>
+                        <h3>Upload Resume</h3>
+                        <p>Share your resume (PDF, TXT, or DOCX) to create a personalized interview experience.</p>
+                    </div>
+                    <div class="step-card">
+                        <div class="step-number">2</div>
+                        <h3>Choose Mode</h3>
+                        <p>Select text-based or video interview mode based on your preference.</p>
+                    </div>
+                    <div class="step-card">
+                        <div class="step-number">3</div>
+                        <h3>Answer Questions</h3>
+                        <p>Answer AI-generated questions tailored to your role and experience level.</p>
+                    </div>
+                    <div class="step-card">
+                        <div class="step-number">4</div>
+                        <h3>Get Feedback</h3>
+                        <p>Receive detailed analysis on vocabulary, clarity, grammar, and communication.</p>
+                    </div>
+                </div>
             </div>
         </div>
-    </section>
 
-    <section>
-        <h2>Transcript Feedback</h2>
-        <textarea id="transcript" placeholder="Paste transcript here..."></textarea>
-        <button id="feedbackBtn">Get Feedback</button>
-        <pre id="fbResult"></pre>
-    </section>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-top: 30px;">
+            <div class="card">
+                <div class="card-header">✨ Key Features</div>
+                <div class="card-body">
+                    <div class="features-grid">
+                        <div class="feature-box">
+                            <h4>🤖 AI Questions</h4>
+                            <p>Context-aware questions based on your resume and role.</p>
+                        </div>
+                        <div class="feature-box">
+                            <h4>🎙️ Voice Mode</h4>
+                            <p>Record audio, get transcribed, receive voice feedback.</p>
+                        </div>
+                        <div class="feature-box">
+                            <h4>📊 Analytics</h4>
+                            <p>Vocabulary, clarity, filler words, and grammar analysis.</p>
+                        </div>
+                        <div class="feature-box">
+                            <h4>💾 History</h4>
+                            <p>Track all past sessions and monitor progress.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-    <script>
-        const uploadBtn = document.getElementById('uploadBtn');
-        const startBtn = document.getElementById('startBtn');
-        const submitBtn = document.getElementById('submitBtn');
-        const feedbackBtn = document.getElementById('feedbackBtn');
+            <div class="card">
+                <div class="card-header">🚀 Quick Start</div>
+                <div class="card-body">
+                    <h3 style="margin-bottom: 15px;">Get Started in 3 Steps</h3>
+                    <ol style="line-height: 2; color: #666; margin-left: 20px;">
+                        <li><strong>Go to Interview Tab</strong> - Upload your resume</li>
+                        <li><strong>Enter Job Role</strong> - Switch to text or video mode</li>
+                        <li><strong>Answer Questions</strong> - Get instant AI feedback</li>
+                    </ol>
+                    <button class="btn btn-primary btn-full mt-20" onclick="showTab('interview')">Start Interview Now →</button>
+                </div>
+            </div>
+        </div>
 
-        let resumeData = null;
-        let history = [];
+        <div class="card mt-20">
+            <div class="card-header">❓ FAQ</div>
+            <div class="card-body">
+                <h4>Do I need to install anything locally?</h4>
+                <p style="margin-bottom: 15px;">No! This web app runs entirely in your browser. Just upload your resume and start interviewing. Your data is only sent to process your interview.</p>
+                
+                <h4>How do I get better feedback?</h4>
+                <p style="margin-bottom: 15px;">The more detailed your answers, the better the feedback. Try to elaborate on your experience, provide examples, and speak naturally.</p>
+                
+                <h4>Can I track my progress?</h4>
+                <p style="margin-bottom: 15px;">Yes! Check the History tab to view all your past interviews and see your improvement over time.</p>
+            </div>
+        </div>
+    </div>
 
-        uploadBtn.addEventListener('click', async () => {
-            const fileInput = document.getElementById('resumeFile');
-            if (!fileInput.files.length) return;
-            const file = fileInput.files[0];
-            const form = new FormData();
-            form.append('file', file);
+    <!-- Interview Tab -->
+    <div id="interview-tab" class="tab-content">
+        <div class="tab-system">
+            <div class="tab-buttons">
+                <button class="tab-btn active" onclick="switchMode('resume', this)">📄 Resume</button>
+                <button class="tab-btn" onclick="switchMode('text', this)">💬 Text Interview</button>
+                <button class="tab-btn" onclick="switchMode('video', this)">🎥 Video Interview</button>
+                <button class="tab-btn" onclick="switchMode('feedback', this)">📊 Analyze</button>
+                <button class="tab-btn" onclick="switchMode('history', this)">📜 History</button>
+            </div>
+
+            <!-- Resume Section -->
+            <div id="content-resume" class="tab-content active">
+                <div class="card-body">
+                    <h2 style="margin-bottom: 20px;">📄 Upload Your Resume</h2>
+                    <div class="form-group">
+                        <label>Select Resume File (PDF, TXT, DOCX)</label>
+                        <input type="file" id="resumeFile" accept=".pdf,.txt,.docx">
+                    </div>
+                    <button class="btn btn-primary btn-full" id="uploadBtn">📤 Upload Resume</button>
+                    <div id="resumeStatus" class="status mt-20"></div>
+                    <pre id="parsed" style="margin-top: 20px; background: var(--light); padding: 15px; border-radius: 8px; max-height: 300px; overflow-y: auto; display: none;"></pre>
+                </div>
+            </div>
+
+            <!-- Text Interview Section -->
+            <div id="content-text" class="tab-content" style="display: none;">
+                <div class="card-body">
+                    <h2 style="margin-bottom: 20px;">💬 Interview Questions</h2>
+                    <div class="form-group">
+                        <label>Job Role</label>
+                        <input type="text" id="role" placeholder="e.g., Senior Backend Engineer, Product Manager">
+                    </div>
+                    <button class="btn btn-primary btn-full" id="startBtn">🎯 Start Interview</button>
+
+                    <div id="textInterview" style="display: none; margin-top: 25px;">
+                        <div class="result-box" style="background: #e3f2fd; border-left-color: var(--primary);">
+                            <p id="question" style="font-size: 16px; font-weight: 500; margin: 0;"></p>
+                        </div>
+
+                        <div class="form-group" style="margin-top: 20px;">
+                            <label>Your Answer</label>
+                            <textarea id="answer" placeholder="Type your answer here..."></textarea>
+                        </div>
+
+                        <button class="btn btn-success btn-full" id="submitBtn">✓ Submit Answer</button>
+
+                        <div id="evalResult" style="margin-top: 20px;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Video Interview Section -->
+            <div id="content-video" class="tab-content" style="display: none;">
+                <div class="card-body">
+                    <h2 style="margin-bottom: 20px;">🎥 Video Interview</h2>
+                    
+                    <div class="form-group">
+                        <label>Job Role</label>
+                        <input type="text" id="videoRole" placeholder="e.g., Product Manager">
+                    </div>
+
+                    <div class="video-container">
+                        <video id="localVideo" autoplay muted playsinline></video>
+                        <div class="video-overlay" id="videoStatus">Ready to start</div>
+                    </div>
+
+                    <div class="btn-group btn-full">
+                        <button class="btn btn-primary" id="startVideoBtn" style="flex: 1;">📹 Start Camera</button>
+                        <button class="btn btn-success" id="recordBtn" style="display: none; flex: 1;">⏺️ Record Answer</button>
+                    </div>
+
+                    <div id="transcriptSection" style="display: none; margin-top: 25px;">
+                        <h3>Your Answer (Transcribed)</h3>
+                        <div class="result-box">
+                            <p id="transcriptDisplay" style="margin: 0;"></p>
+                        </div>
+
+                        <h3 style="margin-top: 20px;">AI Feedback</h3>
+                        <div class="result-box" style="background: #e8f5e9; border-left-color: var(--success);">
+                            <p id="aiResponseText" style="margin: 0;"></p>
+                        </div>
+                        
+                        <button class="btn btn-primary mt-20" id="playAudioBtn" style="display: none;">🔊 Play Voice Feedback</button>
+                        <audio id="aiAudio"></audio>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Feedback Section -->
+            <div id="content-feedback" class="tab-content" style="display: none;">
+                <div class="card-body">
+                    <h2 style="margin-bottom: 20px;">📊 Analyze Transcript</h2>
+                    <div class="form-group">
+                        <label>Paste Your Transcript</label>
+                        <textarea id="transcript" placeholder="Paste your interview transcript or any text to analyze..."></textarea>
+                    </div>
+                    <button class="btn btn-primary btn-full" id="feedbackBtn">🔍 Analyze</button>
+
+                    <div id="fbResult" style="margin-top: 25px;"></div>
+                </div>
+            </div>
+
+            <!-- History Section -->
+            <div id="content-history" class="tab-content" style="display: none;">
+                <div class="card-body">
+                    <h2 style="margin-bottom: 20px;">📜 Interview History</h2>
+                    <button class="btn btn-primary" id="loadHistoryBtn">📂 Load Past Sessions</button>
+                    <div id="sessionsList" style="margin-top: 20px;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- Modal for Alerts -->
+<div id="modal" class="modal">
+    <div class="modal-content">
+        <button class="modal-close" onclick="closeModal()">✕</button>
+        <h2 id="modalTitle">Message</h2>
+        <p id="modalBody" style="margin: 15px 0; line-height: 1.6;"></p>
+        <button class="btn btn-primary btn-full mt-20" onclick="closeModal()">OK</button>
+    </div>
+</div>
+
+<script>
+    let resumeData = null;
+    let currentSessionId = null;
+    let history = [];
+    let mediaRecorder = null;
+    let recordedChunks = [];
+    let stream = null;
+
+    function switchMode(mode, element) {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('[id^="content-"]').forEach(d => d.style.display = 'none');
+        
+        if (element) element.classList.add('active');
+        document.getElementById('content-' + mode).style.display = 'block';
+    }
+
+    function showTab(tabName) {
+        document.querySelectorAll('[id$="-tab"]').forEach(s => s.classList.remove('active'));
+        document.getElementById(tabName + '-tab').classList.add('active');
+    }
+
+    function showStatus(elementId, message, type) {
+        const el = document.getElementById(elementId);
+        el.textContent = message;
+        el.className = 'status show ' + type;
+    }
+
+    function showAlert(title, message) {
+        document.getElementById('modalTitle').textContent = title;
+        document.getElementById('modalBody').textContent = message;
+        document.getElementById('modal').classList.add('show');
+    }
+
+    function closeModal() {
+        document.getElementById('modal').classList.remove('show');
+    }
+
+    // Resume Upload
+    document.getElementById('uploadBtn').addEventListener('click', async () => {
+        const fileInput = document.getElementById('resumeFile');
+        if (!fileInput.files.length) return showStatus('resumeStatus', '⚠️ Please select a file', 'warning');
+        
+        const form = new FormData();
+        form.append('file', fileInput.files[0]);
+        
+        showStatus('resumeStatus', '⏳ Uploading...', 'info');
+        try {
             const res = await fetch('/upload_resume', { method: 'POST', body: form });
             const data = await res.json();
             resumeData = data.parsed;
+            
+            showStatus('resumeStatus', '✅ Resume uploaded successfully!', 'success');
             document.getElementById('parsed').textContent = JSON.stringify(resumeData, null, 2);
-        });
+            document.getElementById('parsed').style.display = 'block';
+        } catch (e) {
+            showStatus('resumeStatus', '❌ Error: ' + e.message, 'error');
+        }
+    });
 
-        startBtn.addEventListener('click', async () => {
-            if (!resumeData) return alert('Upload a resume first');
-            const role = document.getElementById('role').value;
+    // Text Interview
+    document.getElementById('startBtn').addEventListener('click', async () => {
+        if (!resumeData) return showAlert('❌ Resume Required', 'Please upload your resume first');
+        const role = document.getElementById('role').value;
+        if (!role) return showAlert('⚠️ Role Required', 'Please enter a job role');
+        
+        try {
             const res = await fetch('/start_interview', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ role, resume_data: resumeData }),
             });
             const json = await res.json();
+            
+            currentSessionId = json.session_id;
+            history = [];
+            document.getElementById('textInterview').style.display = 'block';
             document.getElementById('question').textContent = json.question;
-            history.push({ question: json.question });
-        });
+            document.getElementById('answer').value = '';
+            document.getElementById('evalResult').innerHTML = '';
+        } catch (e) {
+            showAlert('❌ Error', 'Failed to start interview: ' + e.message);
+        }
+    });
 
-        submitBtn.addEventListener('click', async () => {
-            const answer = document.getElementById('answer').value;
-            history[history.length - 1].answer = answer;
+    document.getElementById('submitBtn').addEventListener('click', async () => {
+        const answer = document.getElementById('answer').value;
+        if (!answer.trim()) return showAlert('⚠️ Answer Required', 'Please type an answer');
+        
+        const currentQuestion = document.getElementById('question').textContent;
+        history.push({ question: currentQuestion, answer });
+        
+        try {
             const res = await fetch('/submit_answer', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ answer, history }),
+                body: JSON.stringify({ session_id: currentSessionId, answer, history }),
             });
             const json = await res.json();
-            document.getElementById('evalResult').textContent = JSON.stringify(json, null, 2);
-        });
+            
+            let evalHTML = '<div class="score-grid">';
+            if (json.evaluation?.score) {
+                evalHTML += `<div class="score-card"><div class="score-value">${json.evaluation.score}/10</div><div class="score-label">Score</div></div>`;
+            }
+            evalHTML += '</div>';
+            
+            if (json.evaluation?.feedback) {
+                evalHTML += `<div class="result-box"><strong>📝 Feedback:</strong> ${json.evaluation.feedback}</div>`;
+            }
+            if (json.evaluation?.strengths?.length) {
+                evalHTML += `<div class="result-box"><strong>✅ Strengths:</strong> ${json.evaluation.strengths.join(', ')}</div>`;
+            }
+            if (json.evaluation?.improvements?.length) {
+                evalHTML += `<div class="result-box"><strong>💡 Improvements:</strong> ${json.evaluation.improvements.join(', ')}</div>`;
+            }
+            
+            document.getElementById('evalResult').innerHTML = evalHTML;
+            
+            if (json.next_question) {
+                setTimeout(() => {
+                    document.getElementById('question').textContent = json.next_question;
+                    document.getElementById('answer').value = '';
+                }, 1500);
+            }
+        } catch (e) {
+            showAlert('❌ Error', 'Failed to submit: ' + e.message);
+        }
+    });
 
-        feedbackBtn.addEventListener('click', async () => {
-            const transcript = document.getElementById('transcript').value;
+    // Video Interview
+    document.getElementById('startVideoBtn').addEventListener('click', async () => {
+        const role = document.getElementById('videoRole').value;
+        if (!role) return showAlert('⚠️ Role Required', 'Enter a job role first');
+        
+        const videoStatus = document.getElementById('videoStatus');
+        videoStatus.textContent = '⏳ Initializing camera...';
+        
+        try {
+            stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+            document.getElementById('localVideo').srcObject = stream;
+            videoStatus.textContent = '✅ Camera ready - Click "Record Answer"';
+            
+            mediaRecorder = new MediaRecorder(stream);
+            recordedChunks = [];
+            
+            document.getElementById('recordBtn').style.display = 'inline-flex';
+            document.getElementById('startVideoBtn').textContent = '🔴 Stop Camera';
+            
+            document.getElementById('recordBtn').onclick = () => {
+                if (mediaRecorder.state === 'inactive') {
+                    recordedChunks = [];
+                    mediaRecorder.start();
+                    videoStatus.textContent = '🎙️ Recording...';
+                    document.getElementById('recordBtn').textContent = '⏹️ Stop';
+                } else {
+                    mediaRecorder.stop();
+                    videoStatus.textContent = '⏳ Processing...';
+                }
+            };
+            
+            mediaRecorder.ondataavailable = e => recordedChunks.push(e.data);
+            mediaRecorder.onstop = async () => {
+                const blob = new Blob(recordedChunks, { type: 'audio/webm' });
+                const form = new FormData();
+                form.append('file', blob, 'response.webm');
+                form.append('history', JSON.stringify(history));
+                form.append('session_id', currentSessionId || '');
+                
+                videoStatus.textContent = '⏳ Transcribing...';
+                try {
+                    const res = await fetch('/video_audio', { method: 'POST', body: form });
+                    const json = await res.json();
+                    
+                    document.getElementById('transcriptSection').style.display = 'block';
+                    document.getElementById('transcriptDisplay').textContent = json.transcript || 'No transcription';
+                    videoStatus.textContent = '✅ Done';
+                    
+                    if (json.evaluation?.feedback) {
+                        document.getElementById('aiResponseText').textContent = json.evaluation.feedback;
+                    }
+                } catch (e) {
+                    videoStatus.textContent = '❌ Error: ' + e.message;
+                }
+            };
+        } catch (err) {
+            videoStatus.textContent = '❌ Camera error: ' + err.message;
+        }
+    });
+
+    // Transcript Feedback
+    document.getElementById('feedbackBtn').addEventListener('click', async () => {
+        const transcript = document.getElementById('transcript').value;
+        if (!transcript.trim()) return showAlert('⚠️ Transcript Required', 'Paste a transcript to analyze');
+        
+        try {
             const res = await fetch('/feedback', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ transcript }),
             });
             const json = await res.json();
-            document.getElementById('fbResult').textContent = JSON.stringify(json, null, 2);
-        });
-
-        // mode switching
-        const modeRadios = document.querySelectorAll('input[name=mode]');
-        modeRadios.forEach(r => r.addEventListener('change', () => {
-            document.getElementById('textMode').style.display = r.value === 'text' ? '' : 'none';
-            document.getElementById('videoMode').style.display = r.value === 'video' ? '' : 'none';
-        }));
-
-        // video chat placeholders
-        const startVideoBtn = document.getElementById('startVideoBtn');
-        const localVideo = document.getElementById('localVideo');
-        const videoStatus = document.getElementById('videoStatus');
-
-        startVideoBtn.addEventListener('click', async () => {
-            videoStatus.textContent = 'Initializing camera...';
-            try {
-                const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-                localVideo.srcObject = stream;
-                videoStatus.textContent = 'Camera started.';
-                document.getElementById('recorderControls').style.display = '';
-
-                // set up recorder
-                const mediaRecorder = new MediaRecorder(stream);
-                let chunks = [];
-                recordBtn.onclick = () => {
-                    if (mediaRecorder.state === 'inactive') {
-                        chunks = [];
-                        mediaRecorder.start();
-                        recordStatus.textContent = 'Recording...';
-                        recordBtn.textContent = 'Stop & Send';
-                    } else {
-                        mediaRecorder.stop();
-                    }
-                };
-
-                mediaRecorder.ondataavailable = e => chunks.push(e.data);
-                mediaRecorder.onstop = async () => {
-                    recordStatus.textContent = 'Sending audio...';
-                    const blob = new Blob(chunks, { type: 'audio/webm' });
-                    const form = new FormData();
-                    form.append('file', blob, 'clip.webm');
-                    form.append('history', JSON.stringify(history));
-                    const res = await fetch('/video_audio', {
-                        method: 'POST',
-                        body: form
-                    });
-                    const json = await res.json();
-                    transcriptDisplay.textContent = json.transcript;
-                    evalDisplay.textContent = JSON.stringify(json.evaluation, null, 2);
-                    recordStatus.textContent = 'Done.';
-                    // you could also ask next question here based on json.evaluation or history
-                };
-
-            } catch (err) {
-                videoStatus.textContent = 'Failed to access camera: ' + err.message;
+            
+            let html = '<div class="score-grid">';
+            html += `<div class="score-card"><div class="score-value">${json.vocabulary_score || 0}%</div><div class="score-label">Vocabulary</div></div>`;
+            html += `<div class="score-card"><div class="score-value">${json.clarity_score || 0}%</div><div class="score-label">Clarity</div></div></div>`;
+            
+            html += '<h3 style="margin-top: 20px;">📝 Analysis</h3>';
+            if (json.filler_words && Object.keys(json.filler_words).length > 0) {
+                html += `<div class="result-box"><strong>Filler Words:</strong> ${JSON.stringify(json.filler_words)}</div>`;
             }
-        });
+            if (json.grammar_issues?.length) {
+                html += `<div class="result-box"><strong>Grammar:</strong> ${json.grammar_issues.join(', ')}</div>`;
+            }
+            if (json.repeated_words && Object.keys(json.repeated_words).length > 0) {
+                html += `<div class="result-box"><strong>Repeated Words:</strong> ${JSON.stringify(json.repeated_words)}</div>`;
+            }
+            
+            document.getElementById('fbResult').innerHTML = html;
+        } catch (e) {
+            showAlert('❌ Error', 'Failed to analyze: ' + e.message);
+        }
+    });
 
-    </script>
+    // History
+    document.getElementById('loadHistoryBtn').addEventListener('click', async () => {
+        try {
+            const res = await fetch('/sessions');
+            const sessions = await res.json();
+            
+            let html = '';
+            if (sessions.length === 0) {
+                html = '<p style="color: #999;">No past sessions yet</p>';
+            } else {
+                sessions.forEach(s => {
+                    const date = new Date(s.started_at).toLocaleString();
+                    html += `<div class="card" style="margin-bottom: 10px; cursor: pointer;" onclick="loadSessionDetail(${s.id})">
+                        <div class="card-header" style="padding: 15px;">📌 ${s.role} - ${date}</div>
+                    </div>`;
+                });
+            }
+            document.getElementById('sessionsList').innerHTML = html;
+        } catch (e) {
+            showAlert('❌ Error', 'Failed to load: ' + e.message);
+        }
+    });
+
+    window.loadSessionDetail = async function(sessionId) {
+        try {
+            const res = await fetch(`/sessions/${sessionId}`);
+            const session = await res.json();
+            
+            let html = `<h3>${session.role} - ${new Date(session.started_at).toLocaleString()}</h3>`;
+            session.interactions.forEach((qa, idx) => {
+                html += `<div style="background: white; padding: 15px; margin: 10px 0; border-radius: 8px;">
+                    <p><strong>Q${idx + 1}:</strong> ${qa.question || 'N/A'}</p>
+                    <p><strong>A:</strong> ${qa.answer || 'N/A'}</p>
+                </div>`;
+            });
+            document.getElementById('sessionsList').innerHTML = html;
+        } catch (e) {
+            showAlert('❌ Error', 'Failed to load details: ' + e.message);
+        }
+    };
+
+    // Keyboard shortcuts
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') closeModal();
+    });
+</script>
+
 </body>
 </html>

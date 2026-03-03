@@ -38,3 +38,13 @@ def test_upload_resume_empty_pdf(monkeypatch):
     res = client.post('/upload_resume', files=data)
     assert res.status_code == 500
     assert 'No text extracted' in res.json()['detail']
+
+
+def test_video_audio_no_history():
+    # send a mock audio blob and ensure the endpoint returns transcript key
+    blob = io.BytesIO(b"dummy audio")
+    res = client.post('/video_audio', files={'file': ('a.webm', blob, 'audio/webm')})
+    assert res.status_code == 200
+    json_data = res.json()
+    assert 'transcript' in json_data
+    assert 'evaluation' in json_data

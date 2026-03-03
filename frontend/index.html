@@ -579,6 +579,9 @@
                         <input type="text" id="videoRole" placeholder="e.g., Product Manager">
                     </div>
 
+                    <div id="videoQuestion" class="result-box" style="background: #e3f2fd; border-left-color: var(--primary); display: none;">
+                        <p id="videoQuestionText" style="font-size: 16px; font-weight: 500; margin: 0;"></p>
+                    </div>
                     <div class="video-container">
                         <video id="localVideo" autoplay muted playsinline></video>
                         <div class="video-overlay" id="videoStatus">Ready to start</div>
@@ -661,6 +664,13 @@
         
         if (element) element.classList.add('active');
         document.getElementById('content-' + mode).style.display = 'block';
+
+        // cleanup video-specific UI when leaving video tab
+        if (mode !== 'video') {
+            document.getElementById('videoQuestion').style.display = 'none';
+            document.getElementById('transcriptSection').style.display = 'none';
+            document.getElementById('videoStatus').textContent = 'Ready to start';
+        }
     }
 
     function showTab(tabName) {
@@ -802,7 +812,25 @@
     document.getElementById('startVideoBtn').addEventListener('click', async () => {
         const role = document.getElementById('videoRole').value;
         if (!role) return showAlert('⚠️ Role Required', 'Enter a job role first');
+        if (!resumeData) return showAlert('❌ Resume Required', 'Please upload your resume first');
         
+        // start interview session for video mode as well
+        try {
+            const res = await fetch(API_BASE + '/start_interview', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ role, resume_data: resumeData }),
+            });
+            const json = await res.json();
+            currentSessionId = json.session_id;
+            history = [];
+            document.getElementById('videoQuestion').style.display = 'block';
+            document.getElementById('videoQuestionText').textContent = json.question;
+        } catch (e) {
+            showAlert('❌ Error', 'Failed to start interview: ' + e.message);
+            return;
+        }
+
         const videoStatus = document.getElementById('videoStatus');
         videoStatus.textContent = '⏳ Initializing camera...';
         
@@ -834,6 +862,7 @@
                 const blob = new Blob(recordedChunks, { type: 'audio/webm' });
                 const form = new FormData();
                 form.append('file', blob, 'response.webm');
+                // include history & session so backend can compute next question
                 form.append('history', JSON.stringify(history));
                 form.append('session_id', currentSessionId || '');
                 
@@ -848,6 +877,13 @@
                     
                     if (json.evaluation?.feedback) {
                         document.getElementById('aiResponseText').textContent = json.evaluation.feedback;
+                    }
+                    // append Q&A to history
+                    const prevQ = document.getElementById('videoQuestionText').textContent;
+                    history.push({ question: prevQ, answer: json.transcript || '' });
+                    // show next question if provided
+                    if (json.next_question) {
+                        document.getElementById('videoQuestionText').textContent = json.next_question;
                     }
                 } catch (e) {
                     videoStatus.textContent = '❌ Error: ' + e.message;

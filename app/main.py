@@ -49,8 +49,6 @@ async def upload_resume(file: UploadFile = File(...)):
         # return JSON error so frontend can parse
         raise HTTPException(status_code=500, detail=f"Failed to process file: {str(e)}")
 
-app.mount("/", StaticFiles(directory="frontend", html=True), name="frontend")
-
 def get_db():
     db = models.SessionLocal()
     try:
@@ -187,3 +185,6 @@ def end_session(payload: dict, db: Session = Depends(get_db)):
         "final_score": min(100, total_score),
         "role": session.role
     }
+
+# serve the frontend last so API routes are matched first
+app.mount("/", StaticFiles(directory="frontend", html=True), name="frontend")

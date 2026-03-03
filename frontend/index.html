@@ -644,6 +644,10 @@
 </div>
 
 <script>
+    // base path for API requests; Firebase Hosting may rewrite `/api/*` to the backend.
+    // leave empty for same-origin, or set via a script tag if needed.
+    const API_BASE = '';
+
     let resumeData = null;
     let currentSessionId = null;
     let history = [];
@@ -676,6 +680,24 @@
         document.getElementById('modal').classList.add('show');
     }
 
+    // check that the page is served by the backend, not a static file server
+    window.addEventListener('DOMContentLoaded', () => {
+        const backendHost = 'localhost:8000';
+        if (window.location.host !== backendHost) {
+            const banner = document.createElement('div');
+            banner.style.background = '#ffebee';
+            banner.style.color = '#d32f2f';
+            banner.style.padding = '10px';
+            banner.style.textAlign = 'center';
+            banner.style.borderBottom = '2px solid #d32f2f';
+            banner.innerHTML = `You are viewing this page from <strong>${window.location.host}</strong>. ` +
+                               `The backend server must run at <strong>${backendHost}</strong>. ` +
+                               `Please start <code>uvicorn app.main:app --reload</code> and open ` +
+                               `<a href="http://${backendHost}" style="color:#d32f2f; text-decoration:underline;">http://${backendHost}</a>.`;
+            document.body.prepend(banner);
+        }
+    });
+
     function closeModal() {
         document.getElementById('modal').classList.remove('show');
     }
@@ -690,7 +712,7 @@
         
         showStatus('resumeStatus', '⏳ Uploading...', 'info');
         try {
-            const res = await fetch('/upload_resume', { method: 'POST', body: form });
+            const res = await fetch(API_BASE + '/upload_resume', { method: 'POST', body: form });
             if (!res.ok) {
                 // try to extract error body (could be text or json)
                 const text = await res.text();
@@ -714,7 +736,7 @@
         if (!role) return showAlert('⚠️ Role Required', 'Please enter a job role');
         
         try {
-            const res = await fetch('/start_interview', {
+            const res = await fetch(API_BASE + '/start_interview', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ role, resume_data: resumeData }),
@@ -740,7 +762,7 @@
         history.push({ question: currentQuestion, answer });
         
         try {
-            const res = await fetch('/submit_answer', {
+            const res = await fetch(API_BASE + '/submit_answer', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ session_id: currentSessionId, answer, history }),
@@ -817,7 +839,7 @@
                 
                 videoStatus.textContent = '⏳ Transcribing...';
                 try {
-                    const res = await fetch('/video_audio', { method: 'POST', body: form });
+                    const res = await fetch(API_BASE + '/video_audio', { method: 'POST', body: form });
                     const json = await res.json();
                     
                     document.getElementById('transcriptSection').style.display = 'block';
@@ -842,7 +864,7 @@
         if (!transcript.trim()) return showAlert('⚠️ Transcript Required', 'Paste a transcript to analyze');
         
         try {
-            const res = await fetch('/feedback', {
+            const res = await fetch(API_BASE + '/feedback', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ transcript }),
@@ -873,7 +895,7 @@
     // History
     document.getElementById('loadHistoryBtn').addEventListener('click', async () => {
         try {
-            const res = await fetch('/sessions');
+            const res = await fetch(API_BASE + '/sessions');
             const sessions = await res.json();
             
             let html = '';
@@ -895,7 +917,7 @@
 
     window.loadSessionDetail = async function(sessionId) {
         try {
-            const res = await fetch(`/sessions/${sessionId}`);
+            const res = await fetch(API_BASE + `/sessions/${sessionId}`);
             const session = await res.json();
             
             let html = `<h3>${session.role} - ${new Date(session.started_at).toLocaleString()}</h3>`;

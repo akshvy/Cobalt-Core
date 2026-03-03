@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Cobalt Core AI Interviewer</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 2rem; }
+        section { margin-bottom: 2rem; }
+        textarea { width: 100%; height: 100px; }
+    </style>
+</head>
+<body>
+    <h1>Cobalt Core AI Interviewer</h1>
+
+    <section>
+        <h2>Upload Resume</h2>
+        <input type="file" id="resumeFile" />
+        <button id="uploadBtn">Upload</button>
+        <pre id="parsed"></pre>
+    </section>
+
+    <section>
+        <h2>Interview</h2>
+        <div>
+            <label><input type="radio" name="mode" value="text" checked /> Text</label>
+            <label><input type="radio" name="mode" value="video" /> Video chat</label>
+        </div>
+
+        <div id="textMode">
+            <label>Role: <input type="text" id="role" /></label>
+            <button id="startBtn">Start</button>
+            <p id="question"></p>
+            <textarea id="answer" placeholder="Your answer..."></textarea>
+            <button id="submitBtn">Submit Answer</button>
+            <pre id="evalResult"></pre>
+        </div>
+
+        <div id="videoMode" style="display:none;">
+            <p>A video chat session with the AI model (placeholder).</p>
+            <video id="localVideo" autoplay muted playsinline style="width:300px; height:200px; background:#000"></video>
+            <button id="startVideoBtn">Start Video Session</button>
+            <p id="videoStatus"></p>
+        </div>
+    </section>
+
+    <section>
+        <h2>Transcript Feedback</h2>
+        <textarea id="transcript" placeholder="Paste transcript here..."></textarea>
+        <button id="feedbackBtn">Get Feedback</button>
+        <pre id="fbResult"></pre>
+    </section>
+
+    <script>
+        const uploadBtn = document.getElementById('uploadBtn');
+        const startBtn = document.getElementById('startBtn');
+        const submitBtn = document.getElementById('submitBtn');
+        const feedbackBtn = document.getElementById('feedbackBtn');
+
+        let resumeData = null;
+        let history = [];
+
+        uploadBtn.addEventListener('click', async () => {
+            const fileInput = document.getElementById('resumeFile');
+            if (!fileInput.files.length) return;
+            const file = fileInput.files[0];
+            const form = new FormData();
+            form.append('file', file);
+            const res = await fetch('/upload_resume', { method: 'POST', body: form });
+            const data = await res.json();
+            resumeData = data.parsed;
+            document.getElementById('parsed').textContent = JSON.stringify(resumeData, null, 2);
+        });
+
+        startBtn.addEventListener('click', async () => {
+            if (!resumeData) return alert('Upload a resume first');
+            const role = document.getElementById('role').value;
+            const res = await fetch('/start_interview', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ role, resume_data: resumeData }),
+            });
+            const json = await res.json();
+            document.getElementById('question').textContent = json.question;
+            history.push({ question: json.question });
+        });
+
+        submitBtn.addEventListener('click', async () => {
+            const answer = document.getElementById('answer').value;
+            history[history.length - 1].answer = answer;
+            const res = await fetch('/submit_answer', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ answer, history }),
+            });
+            const json = await res.json();
+            document.getElementById('evalResult').textContent = JSON.stringify(json, null, 2);
+        });
+
+        feedbackBtn.addEventListener('click', async () => {
+            const transcript = document.getElementById('transcript').value;
+            const res = await fetch('/feedback', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ transcript }),
+            });
+            const json = await res.json();
+            document.getElementById('fbResult').textContent = JSON.stringify(json, null, 2);
+        });
+
+        // mode switching
+        const modeRadios = document.querySelectorAll('input[name=mode]');
+        modeRadios.forEach(r => r.addEventListener('change', () => {
+            document.getElementById('textMode').style.display = r.value === 'text' ? '' : 'none';
+            document.getElementById('videoMode').style.display = r.value === 'video' ? '' : 'none';
+        }));
+
+        // video chat placeholders
+        const startVideoBtn = document.getElementById('startVideoBtn');
+        const localVideo = document.getElementById('localVideo');
+        const videoStatus = document.getElementById('videoStatus');
+
+        startVideoBtn.addEventListener('click', async () => {
+            videoStatus.textContent = 'Initializing camera...';
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+                localVideo.srcObject = stream;
+                videoStatus.textContent = 'Camera started. (AI video chat not implemented)';
+                // Here you would connect the stream to a backend/service for AI processing
+            } catch (err) {
+                videoStatus.textContent = 'Failed to access camera: ' + err.message;
+            }
+        });
+
+    </script>
+</body>
+</html>

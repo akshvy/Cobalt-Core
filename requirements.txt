@@ -1,0 +1,9 @@
+fastapi
+uvicorn[standard]
+pydantic
+python-multipart
+sqlalchemy
+psycopg2-binary
+openai
+python-docx
+pdfplumber
